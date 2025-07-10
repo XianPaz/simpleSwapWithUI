@@ -10,3 +10,7 @@ cache
 
 # Compilation files
 ignition
+
+# Converage run data
+coverage
+coverage.json
