@@ -1,0 +1,12 @@
+# Dependencies
+node_modules
+
+# Compilation files
+artifacts
+cache
+
+# Environment variable files
+.env
+
+# Compilation files
+ignition
