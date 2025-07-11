@@ -8,20 +8,22 @@ describe("SimpleSwap", function () {
     [owner, user] = await ethers.getSigners();
 
     // Deploy Token A
+    // const tokenA = await ethers.deployContract("XianPazTokenA", owner.getAddress());
+    // console.log(owner.address, owner.getAddress(), owner);
     const TokenA = await ethers.getContractFactory("XianPazTokenA");
-    tokenA = await TokenA.deploy(owner);
+    tokenA = await TokenA.deploy(owner.address);
     await tokenA.waitForDeployment();
 
     // Mint Token A
-    await tokenA.mint(owner, ethers.parseEther("100000"));
+    await tokenA.mint(owner.address, ethers.parseEther("100000"));
 
     // Deploy Token B
     const TokenB = await ethers.getContractFactory("XianPazTokenB");
-    tokenB = await TokenB.deploy(owner);
+    tokenB = await TokenB.deploy(owner.address);
     await tokenB.waitForDeployment();
 
     // Mint Token B
-    await tokenB.mint(owner, ethers.parseEther("100000"));
+    await tokenB.mint(owner.address, ethers.parseEther("100000"));
 
     // Deploy SimpleSwap
     const SimpleSwap = await ethers.getContractFactory("SimpleSwap");
@@ -42,7 +44,7 @@ describe("SimpleSwap", function () {
       liquidityTokenB,
       0,
       0,
-      owner,
+      owner.address,
       Math.floor(Date.now() / 1000) + 60
     );
   });
@@ -58,24 +60,24 @@ describe("SimpleSwap", function () {
   it("should allow token swap (A → B)", async () => {
     const amountIn = ethers.parseEther("1000");
 
-    await tokenA.transfer(user, amountIn);
+    await tokenA.transfer(user.address, amountIn);
 
     await tokenA.approve(swap.getAddress(), amountIn);
 
     const path = [tokenA.getAddress(), tokenB.getAddress()];
     const deadline = Math.floor(Date.now() / 1000) + 60;
 
-    const balBefore = await tokenB.balanceOf(user);
+    const balBefore = await tokenB.balanceOf(user.address);
 
     await swap.swapExactTokensForTokens(
       amountIn,
       0,
       path,
-      user,
+      user.address,
       deadline
     );
 
-    const balAfter = await tokenB.balanceOf(user);
+    const balAfter = await tokenB.balanceOf(user.address);
     expect(balAfter).to.be.gt(balBefore);
   });
 
@@ -90,8 +92,8 @@ describe("SimpleSwap", function () {
   it("should remove liquidity", async () => {
     const liquidity = await swap.totalLiquidity();
 
-    const balABefore = await tokenA.balanceOf(owner);
-    const balBBefore = await tokenB.balanceOf(owner);
+    const balABefore = await tokenA.balanceOf(owner.address);
+    const balBBefore = await tokenB.balanceOf(owner.address);
 
     await swap.removeLiquidity(
       tokenA.getAddress(),
@@ -99,7 +101,7 @@ describe("SimpleSwap", function () {
       liquidity,
       0,
       0,
-      owner,
+      owner.address,
       Math.floor(Date.now() / 1000) + 60
     );
 

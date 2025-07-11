@@ -4,8 +4,8 @@ const path = require("path");
 async function main() {
 
   // Mint tokens
-  // await mintTokenA();
-  // await mintTokenB();
+  await mintTokenA();
+  await mintTokenB();
 
   // Add liquidity
   await addLiquidity();
@@ -56,17 +56,17 @@ async function mintTokenB() {
 async function addLiquidity() {
   const [signer] = await ethers.getSigners();
 
-  const resA = await fetch("XianPazTokenA.json");
-  const { addressA, abiA } = await resA.json();
-  tokenA = new ethers.Contract(addressA, abiA, signer);
+  const tokenAJsonPath = path.join(__dirname, "..", "FrontEnd", "XianPazTokenA.json");
+  const { address: addressA, abi: abiA } = JSON.parse(fs.readFileSync(tokenAJsonPath, "utf8"));
+  tokenA = await new ethers.Contract(addressA, abiA, signer);
 
-  const resB = await fetch("XianPazTokenB.json");
-  const { addressB, abiB } = await resB.json();
-  tokenB = new ethers.Contract(addressB, abiB, signer);
+  const tokenBJsonPath = path.join(__dirname, "..", "FrontEnd", "XianPazTokenB.json");
+  const { address: addressB, abi: abiB } = JSON.parse(fs.readFileSync(tokenBJsonPath, "utf8"));
+  tokenB = await new ethers.Contract(addressB, abiB, signer);
 
-  const resSS = await fetch("SimpleSwap.json");
-  const { addressSS, abiSS } = await resSS.json();
-  simpleSwap = new ethers.Contract(addressSS, abiSS, signer);
+  const simpleSwapJsonPath = path.join(__dirname, "..", "FrontEnd", "SimpleSwap.json");
+  const { address: addressSS, abi: abiSS } = JSON.parse(fs.readFileSync(simpleSwapJsonPath, "utf8"));
+  simpleSwap = await new ethers.Contract(addressSS, abiSS, signer);
 
   // Amounts to add
   const amountA = ethers.parseEther("50000");
@@ -81,20 +81,20 @@ async function addLiquidity() {
   // Add liquidity
   const deadline = Math.floor(Date.now() / 1000) + 60 * 10; // 10 min from now
 
-  console.log("Adding liquidity...", tokenA.getAddress(), tokenB.getAddress(), amountA, amountB, signer.address, deadline);
-  const tx = await swap.addLiquidity(
-    tokenA.getAddress(),
-    tokenB.getAddress(),
+  console.log("Adding liquidity...");
+  const tx = await simpleSwap.addLiquidity(
+    await tokenA.getAddress(),
+    await tokenB.getAddress(),
     amountA,
     amountB,
-    amountA,
-    amountB,
+    0,
+    0,
     signer.address,
     deadline
   );
 
   const receipt = await tx.wait();
-  console.log("✅ Liquidity added:", receipt.transactionHash);
+  console.log("✅ Liquidity added");
 }
 
 main().catch((error) => {
