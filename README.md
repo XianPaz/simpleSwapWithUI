@@ -1,29 +1,98 @@
 # SimpleSwap
 
-A minimalistic smart contract for token swaps and liquidity management, inspired by Uniswap v1. This contract allows users to:
+A minimalistic swap user interface that allows to swap from XianPazA tokens to XianPazB tokens. Only this direction is available. 
+
+## 🌐 Using the UI
+
+When connecting to the wallet, it shows token balances and the price from the pool.
+
+When user inputs the amount of XianPazA tokens to swap, it calculates the correlative amount of XianPazB tokens to receive (doing a call to the swap contract).
+
+Finally, hitting the Swap button, an allowance is issued and then the swap operation. Once swap has been made, balances and price are updated.
+
+You can find a demo video [here](https://drive.google.com/file/d/1C95yDqBcUF1V_Bkj8ILPtlfxocCec9b3/view?usp=sharing).
+
+## 🚀 Implementation Details
+
+In case you want to experiment in hardhat local node, please use `hardhat.local.config.js` as your `hardhat.config.js`.
+
+`hardhat.config.js` points to sepolia.
+
+### Local Hardhat Environment
+
+a) Run hardhat node
+
+`npx hardhat node`: Starts a HTTP and WebSocket JSON-RPC server at http://127.0.0.1:8545/
+
+b) Compile contracs in local node
+
+`npx hardhat compile`
+
+c) Deploy contracts in local node
+
+`npx hardhat run scripts/deploy.js --network localhost`: Deploys each contract and builds the metadata used by the webapp, that is, the deploy address and the abi.
+
+d) Mint tokens and add liquidy to the pool
+
+`npx hardhat run scripts/addLiquidity.js --network localhost`
+
+### Sepolia Environment
+
+a) Environment Variables
+
+In order to properly point to sepolia, you must provide the following addresses:
+
+`ALCHEMY_API_KEY` = API key for an alchemy node in Sepolia.
+`SEPOLIA_PRIVATE_KEY` = Wallet address which will be used to deploy which needs to have enough gas to pay for them.
+`ETHERSCAN_API_KEY` = API key used to verify contracts.
+
+These settings will allow `hardhat.config.js` directs to sepolia.
+
+b) Compile contracs in local node
+
+`npx hardhat compile`
+
+c) Deploy contracts in local node
+
+`npx hardhat run scripts/deploy.js --network sepolia`: Deploys each contract and builds the metadata used by the webapp, that is, the deploy address and the abi.
+
+d) Mint tokens and add liquidy to the pool
+
+`npx hardhat run scripts/addLiquidity.js --network sepolia`
+
+### Web UI launch
+
+a) Run in localhost
+
+`node server.js`: This runs the server launching the swap UI in `localhost:3000`
+
+b) Run in Netlify
+
+`https://simpleswapwithui.netlify.app/`: The webapp is published in this public URL.
+
+## 🤖 Contract Overview
+SimpleSwap is a simple smart contract for token swaps and liquidity management, inspired by Uniswap v1. This contract allows users to:
 
 - Add liquidity for a single token pair
 - Remove liquidity proportionally
 - Swap between two ERC20 tokens
 - Query prices and output estimates
 
-The repo contains other two contracts:
+The repo contains the two token contracts:
 
 - XianPazTokenA & XianPazTokenB: mintable ERC20s, 18 decimals created with openZeppelin library.
 
 You can find these contracts deployed and verified in Sepolia in the following addresses:
 
-- XianPazTokenA -> 0x0286BF4682568aC31Cae0afAe87391dff0C3d078
-- XianPazTokenB -> 0xC526b8eD99CB755cF6b7BC695D2541266713501F
-- SimpleSwap -> 0x2550a37051a909Ab4792B4F2283b5884A2272C46
-
-SimpleSwap contract has been verified executing the verify() function of the SwapVerifier contract deployed at 0x9f8F02DAB384DDdf1591C3366069Da3Fb0018220 using "Cristian Paz" as the author which can be found in Authors array, position 104 and 105.
+- XianPazTokenA -> 0x1FAf2bAEecA73e270254571e5D78afdE6579f5d8
+- XianPazTokenB -> 0x4420c59f811447518B48dbb9AB950be314F2aA61
+- SimpleSwap -> 0x2120BFA9e4bD01152f3CD972997624fd602dC0da
 
 ⚠️ **Note**: This implementation supports only one fixed pair of tokens, without fees. It's meant for learning, experimentation, and educational purposes—not production use.
 
 ---
 
-## 📄 Contract Overview
+## 📄 Contract Details
 
 - **Token Pair**: Fixed at deployment via constructor (`tokenA`, `tokenB`)
 - **Liquidity Tracking**: Custom liquidity shares tracked via internal bookkeeping
