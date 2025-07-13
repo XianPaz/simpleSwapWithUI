@@ -5,11 +5,6 @@ node_modules
 artifacts
 cache
 
-# Deployed metadata
-FrontEnd/XianPazTokenA.json
-FrontEnd/XianPazTokenB.json
-FrontEnd/SimpleSwap.json
-
 # Environment variable files
 .env
 
