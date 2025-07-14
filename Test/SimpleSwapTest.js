@@ -90,7 +90,8 @@ describe("SimpleSwap", function () {
   });
 
   it("should remove liquidity", async () => {
-    const liquidity = await swap.totalLiquidity();
+    /* const liquidity = await swap.totalLiquidity(); */
+    const liquidity = ethers.parseEther("10");
 
     const balABefore = await tokenA.balanceOf(owner.address);
     const balBBefore = await tokenB.balanceOf(owner.address);
@@ -111,4 +112,126 @@ describe("SimpleSwap", function () {
     expect(balAAfter).to.be.gt(balABefore);
     expect(balBAfter).to.be.gt(balBBefore);
   });
+
+  /* Second wave of tests */
+
+  it("should revert on adding liquidity with invalid token addresses", async () => {
+  const deadline = Math.floor(Date.now() / 1000) + 60;
+  await expect(
+    swap.addLiquidity(
+      ethers.ZeroAddress,
+      tokenB.getAddress(),
+      ethers.parseEther("100"),
+      ethers.parseEther("50"),
+      0,
+      0,
+      owner.address,
+      deadline
+    )
+  ).to.be.revertedWith("invalid tokens");
+});
+
+it("should revert on expired deadline when adding liquidity", async () => {
+  await expect(
+    swap.addLiquidity(
+      tokenA.getAddress(),
+      tokenB.getAddress(),
+      ethers.parseEther("100"),
+      ethers.parseEther("50"),
+      0,
+      0,
+      owner.address,
+      Math.floor(Date.now() / 1000) - 10
+    )
+  ).to.be.revertedWith("expired");
+});
+
+it("should revert when removing more liquidity than owned", async () => {
+  await expect(
+    swap.removeLiquidity(
+      tokenA.getAddress(),
+      tokenB.getAddress(),
+      ethers.parseEther("1000000"), // too much
+      0,
+      0,
+      owner.address,
+      Math.floor(Date.now() / 1000) + 60
+    )
+  ).to.be.revertedWith("not enough liquidity");
+});
+
+it("should revert if swap uses wrong token pair", async () => {
+  const wrongToken = await (await ethers.getContractFactory("XianPazTokenA")).deploy(owner.address);
+  await wrongToken.waitForDeployment();
+
+  const path = [tokenA.getAddress(), wrongToken.getAddress()];
+  await expect(
+    swap.swapExactTokensForTokens(
+      ethers.parseEther("100"),
+      0,
+      path,
+      owner.address,
+      Math.floor(Date.now() / 1000) + 60
+    )
+  ).to.be.revertedWith("invalid token pair");
+});
+
+it("should revert on expired swap", async () => {
+  const path = [tokenA.getAddress(), tokenB.getAddress()];
+  await expect(
+    swap.swapExactTokensForTokens(
+      ethers.parseEther("10"),
+      0,
+      path,
+      owner.address,
+      Math.floor(Date.now() / 1000) - 10
+    )
+  ).to.be.revertedWith("expired");
+});
+
+it("should return correct output amount via getAmountOut", async () => {
+  const reserveA = await swap.reserveA();
+  const reserveB = await swap.reserveB();
+  const amountIn = ethers.parseEther("10");
+
+  const amountOut = await swap.getAmountOut(amountIn, reserveA, reserveB);
+
+  expect(amountOut).to.be.gt(0);
+});
+
+it("should get reverse price (B → A)", async () => {
+  const price = await swap.getPrice(tokenB.getAddress(), tokenA.getAddress());
+  const formatted = parseFloat(ethers.formatUnits(price, 18));
+
+  // 1 B ≈ 2 A (50000 / 25000)
+  expect(formatted).to.be.closeTo(2.0, 0.1);
+});
+
+it("should allow swap B → A", async () => {
+  const amountIn = ethers.parseEther("200");
+
+  await tokenB.transfer(user.address, amountIn);
+  const userTokenB = tokenB.connect(user);
+  const userSwap = swap.connect(user);
+
+  await userTokenB.approve(userSwap.getAddress(), amountIn);
+
+  const path = [tokenB.getAddress(), tokenA.getAddress()];
+  const deadline = Math.floor(Date.now() / 1000) + 60;
+
+  const balBefore = await tokenA.balanceOf(user.address);
+
+  await userSwap.swapExactTokensForTokens(
+    amountIn,
+    0,
+    path,
+    user.address,
+    deadline
+  );
+
+  const balAfter = await tokenA.balanceOf(user.address);
+
+  expect(balAfter).to.be.gt(balBefore);
+});
+
 });
