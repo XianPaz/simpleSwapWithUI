@@ -8,9 +8,6 @@ cache
 # Environment variable files
 .env
 
-# Compilation files
-ignition
-
 # Converage run data
 coverage
 coverage.json

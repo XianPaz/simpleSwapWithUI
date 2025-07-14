@@ -259,3 +259,9 @@ Returns the smaller of two numbers.
 
 **Returns**:
 * uint: Minimum value
+
+---
+
+## 🛠 Test Coverage
+
+![alt text](testCoverage.png)
