@@ -84,9 +84,11 @@ The repo contains the two token contracts:
 
 You can find these contracts deployed and verified in Sepolia in the following addresses:
 
-- XianPazTokenA -> 0x1FAf2bAEecA73e270254571e5D78afdE6579f5d8
-- XianPazTokenB -> 0x4420c59f811447518B48dbb9AB950be314F2aA61
-- SimpleSwap -> 0x2120BFA9e4bD01152f3CD972997624fd602dC0da
+- XianPazTokenA -> 0x1AF67737eEED0a51CB8F570670C2B0F999b6928d
+- XianPazTokenB -> 0x87aE74E2a9c5aB9447C047Ddf89E9aC6D03B2e01
+- SimpleSwap -> 0x9fb89606bC3d5Db43B67776ed029e04b44260710
+
+All contracts deployed with wallet address -> 0xB78A3BF33E12C5c61d117204A0cABFDb9B65776D
 
 ⚠️ **Note**: This implementation supports only one fixed pair of tokens, without fees. It's meant for learning, experimentation, and educational purposes—not production use.
 

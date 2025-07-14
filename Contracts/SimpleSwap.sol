@@ -81,27 +81,31 @@ contract SimpleSwap {
         require(_tokenA == address(tokenA) && _tokenB == address(tokenB), "invalid tokens");
         require(block.timestamp <= deadline, "expired");
 
-        if (totalLiquidity == 0) {
+        uint _totalLiquidity = totalLiquidity;
+        uint _reserveA = reserveA;
+        uint _reserveB = reserveB;
+
+        if (_totalLiquidity == 0) {
             // first liquidity: use desired amounts directly
             amountA = amountADesired;
             amountB = amountBDesired;
             liquidity = sqrt(amountA * amountB);
         } else {
             // use the current ratio of reserves
-            uint amountBOptimal = (amountADesired * reserveB) / reserveA;
+            uint amountBOptimal = (amountADesired * _reserveB) / _reserveA;
             if (amountBOptimal <= amountBDesired) {
                 require(amountBOptimal >= amountBMin, "insufficient b amount");
                 amountA = amountADesired;
                 amountB = amountBOptimal;
             } else {
-                uint amountAOptimal = (amountBDesired * reserveA) / reserveB;
+                uint amountAOptimal = (amountBDesired * _reserveA) / _reserveB;
                 require(amountAOptimal >= amountAMin, "insufficient a amount");
                 amountA = amountAOptimal;
                 amountB = amountBDesired;
             }
             liquidity = min(
-                (amountA * totalLiquidity) / reserveA,
-                (amountB * totalLiquidity) / reserveB
+                (amountA * _totalLiquidity) / _reserveA,
+                (amountB * _totalLiquidity) / _reserveB
             );
         }
 
@@ -176,8 +180,9 @@ contract SimpleSwap {
         require(liquidity <= liquidityBalance[msg.sender], "not enough liquidity");
 
         // calculate proportional amounts
-        amountA = (liquidity * reserveA) / totalLiquidity;
-        amountB = (liquidity * reserveB) / totalLiquidity;
+        uint _totalLiquidity = totalLiquidity;
+        amountA = (liquidity * reserveA) / _totalLiquidity;
+        amountB = (liquidity * reserveB) / _totalLiquidity;
 
         require(amountA >= amountAMin, "insufficient token a amount");
         require(amountB >= amountBMin, "insufficient token b amount");
@@ -214,6 +219,7 @@ contract SimpleSwap {
         uint deadline) 
     external returns (
         uint[] memory amounts) {
+
     require(path.length == 2, "only one pair supported");
     require(block.timestamp <= deadline, "expired");
 
@@ -228,18 +234,16 @@ contract SimpleSwap {
 
     bool isAToB = (input == address(tokenA));
 
-    uint reserveIn;
-    uint reserveOut;
+    uint reserveIn = reserveA;
+    uint reserveOut = reserveB;
     if (isAToB) {
-        reserveIn = reserveA;
-        reserveOut = reserveB;
         tokenA.transferFrom(msg.sender, address(this), amountIn);
     } else {
-        reserveIn = reserveB;
-        reserveOut = reserveA;
+        reserveIn = reserveOut;
+        reserveOut = reserveIn;
         tokenB.transferFrom(msg.sender, address(this), amountIn);
     }
-
+    
     // calculate amount out using constant product formula: x * y = k
     // y_out = (reserve_out * amount_in) / (reserve_in + amount_in)
     uint amountOut = (amountIn * reserveOut) / (reserveIn + amountIn);
@@ -290,12 +294,14 @@ contract SimpleSwap {
             "invalid token pair"
         );
 
+        uint _reserveA = reserveA;
+        uint _reserveB = reserveB;
         if (_tokenA == address(tokenA)) {
-            require(reserveA > 0, "no liquidity");
-            price = (reserveB * 1e18) / reserveA; // scaled by 1e18
+            require(_reserveA > 0, "no liquidity");
+            price = (_reserveB * 1e18) / _reserveA; // scaled by 1e18
         } else {
-            require(reserveB > 0, "no liquidity");
-            price = (reserveA * 1e18) / reserveB; // scaled by 1e18
+            require(_reserveB > 0, "no liquidity");
+            price = (_reserveA * 1e18) / _reserveB; // scaled by 1e18
         }
     }
 
