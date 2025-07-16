@@ -1,5 +1,7 @@
 # SimpleSwap
 
+![alt text](screenshot.png)
+
 A minimalistic swap user interface that allows to swap from XianPazA tokens to XianPazB tokens. Only this direction is available. 
 
 ## 🌐 Using the UI
@@ -261,9 +263,9 @@ Returns the smaller of two numbers.
 ---
 
 ## 🛠 Test Results
-![alt text](testResults.png)
+![alt text](/test/testResults.png)
 ---
 
 ## 🛠 Test Coverage
 
-![alt text](testCoverage.png)
+![alt text](/test/testCoverage.png)
