@@ -10,13 +10,11 @@ When user inputs the amount of XianPazA tokens to swap, it calculates the correl
 
 Finally, hitting the Swap button, an allowance is issued and then the swap operation. Once swap has been made, balances and price are updated.
 
-You can find a demo video [here](https://drive.google.com/file/d/1C95yDqBcUF1V_Bkj8ILPtlfxocCec9b3/view?usp=sharing).
+You can find a live demo [here](https://simpleswapwithui.netlify.app/).
 
 ## 🚀 Implementation Details
 
-In case you want to experiment in hardhat local node, please use `hardhat.local.config.js` as your `hardhat.config.js`.
-
-`hardhat.config.js` points to sepolia.
+In case you want to experiment in hardhat local node, please use `hardhat.local.config.js` as your `hardhat.config.js`. `hardhat.config.js` points to sepolia.
 
 ### Local Hardhat Environment
 
@@ -40,13 +38,13 @@ d) Mint tokens and add liquidy to the pool
 
 a) Environment Variables
 
-In order to properly point to sepolia, you must provide the following addresses:
+In order to properly point to sepolia, you must provide the following addresses in your `.env` file:
 
 `ALCHEMY_API_KEY` = API key for an alchemy node in Sepolia.
 `SEPOLIA_PRIVATE_KEY` = Wallet address which will be used to deploy which needs to have enough gas to pay for them.
 `ETHERSCAN_API_KEY` = API key used to verify contracts.
 
-These settings will allow `hardhat.config.js` directs to sepolia.
+These settings will allow `hardhat.config.js` to direct to sepolia.
 
 b) Compile contracs in local node
 
@@ -84,9 +82,9 @@ The repo contains the two token contracts:
 
 You can find these contracts deployed and verified in Sepolia in the following addresses:
 
-- XianPazTokenA -> 0x1AF67737eEED0a51CB8F570670C2B0F999b6928d
-- XianPazTokenB -> 0x87aE74E2a9c5aB9447C047Ddf89E9aC6D03B2e01
-- SimpleSwap -> 0x9fb89606bC3d5Db43B67776ed029e04b44260710
+- XianPazTokenA -> 0x231e356AaC9b22c313E8A0697d055453F226a153
+- XianPazTokenB -> 0xB99512678b8aE7a9D31529C24716fA2d1e757Ac6
+- SimpleSwap -> 0x78BaB5A34B32a8E0A0A537ffB176F03157477846
 
 All contracts deployed with wallet address -> 0xB78A3BF33E12C5c61d117204A0cABFDb9B65776D
 
@@ -260,6 +258,10 @@ Returns the smaller of two numbers.
 **Returns**:
 * uint: Minimum value
 
+---
+
+## 🛠 Test Results
+![alt text](testResults.png)
 ---
 
 ## 🛠 Test Coverage
