@@ -220,62 +220,61 @@ contract SimpleSwap {
     external returns (
         uint[] memory amounts) {
 
-    require(path.length == 2, "only one pair supported");
-    require(block.timestamp <= deadline, "expired");
+        require(path.length == 2, "only one pair supported");
+        require(block.timestamp <= deadline, "expired");
 
-    address input = path[0];
-    address output = path[1];
+        IERC20 poolTokenA = tokenA;
+        IERC20 poolTokenB = tokenB;
+        require(
+            (path[0] == address(poolTokenA) && path[1] == address(poolTokenB)) ||
+            (path[0] == address(poolTokenB) && path[1] == address(poolTokenA)),
+            "invalid token pair"
+        );
 
-    require(
-        (input == address(tokenA) && output == address(tokenB)) ||
-        (input == address(tokenB) && output == address(tokenA)),
-        "invalid token pair"
-    );
+        bool isAToB = (path[0] == address(poolTokenA));
 
-    bool isAToB = (input == address(tokenA));
+        uint reserveIn = reserveA;
+        uint reserveOut = reserveB;
+        if (isAToB) {
+            tokenA.transferFrom(msg.sender, address(this), amountIn);
+        } else {
+            reserveIn = reserveOut;
+            reserveOut = reserveIn;
+            tokenB.transferFrom(msg.sender, address(this), amountIn);
+        }
+        
+        // calculate amount out using constant product formula: x * y = k
+        // y_out = (reserve_out * amount_in) / (reserve_in + amount_in)
+        uint amountOut = (amountIn * reserveOut) / (reserveIn + amountIn);
 
-    uint reserveIn = reserveA;
-    uint reserveOut = reserveB;
-    if (isAToB) {
-        tokenA.transferFrom(msg.sender, address(this), amountIn);
-    } else {
-        reserveIn = reserveOut;
-        reserveOut = reserveIn;
-        tokenB.transferFrom(msg.sender, address(this), amountIn);
-    }
-    
-    // calculate amount out using constant product formula: x * y = k
-    // y_out = (reserve_out * amount_in) / (reserve_in + amount_in)
-    uint amountOut = (amountIn * reserveOut) / (reserveIn + amountIn);
+        require(amountOut >= amountOutMin, "insufficient output amount");
 
-    require(amountOut >= amountOutMin, "insufficient output amount");
+        // transfer output tokens to recipient
+        if (isAToB) {
+            require(tokenB.transfer(to, amountOut), "transfer fail for output token");
+        } else {
+            require(tokenA.transfer(to, amountOut), "transfer fail for output token");
+        }
 
-    // transfer output tokens to recipient
-    if (isAToB) {
-       require(tokenB.transfer(to, amountOut), "transfer fail for output token");
-    } else {
-       require(tokenA.transfer(to, amountOut), "transfer fail for output token");
-    }
+        // update reserves
+        if (isAToB) {
+            reserveA += amountIn;
+            reserveB -= amountOut;
+        } else {
+            reserveB += amountIn;
+            reserveA -= amountOut;
+        }
 
-    // update reserves
-    if (isAToB) {
-        reserveA += amountIn;
-        reserveB -= amountOut;
-    } else {
-        reserveB += amountIn;
-        reserveA -= amountOut;
-    }
+        // return input and output amounts
+        uint[] memory _amounts = new uint[](2);
+        _amounts[0] = amountIn;
+        _amounts[1] = amountOut;
+        amounts = _amounts;
 
-    // return input and output amounts
-    uint[] memory _amounts = new uint[](2);
-    _amounts[0] = amountIn;
-    _amounts[1] = amountOut;
-    amounts = _amounts;
+        // emit event for token swapped
+        emit TokenSwapped(msg.sender, amountIn, amountOut);
 
-    // emit event for token swapped
-    emit TokenSwapped(msg.sender, amountIn, amountOut);
-
-    return amounts;
+        return amounts;
     }
 
     /// @notice Gets the price ratio between two tokens
@@ -288,15 +287,17 @@ contract SimpleSwap {
     external view returns (
         uint price) {
 
+        IERC20 poolTokenA = tokenA;
+        IERC20 poolTokenB = tokenB;
         require(
-            (_tokenA == address(tokenA) && _tokenB == address(tokenB)) ||
-            (_tokenA == address(tokenB) && _tokenB == address(tokenA)),
+            (_tokenA == address(poolTokenA) && _tokenB == address(poolTokenB)) ||
+            (_tokenA == address(poolTokenB) && _tokenB == address(poolTokenA)),
             "invalid token pair"
         );
 
         uint _reserveA = reserveA;
         uint _reserveB = reserveB;
-        if (_tokenA == address(tokenA)) {
+        if (_tokenA == address(poolTokenA)) {
             require(_reserveA > 0, "no liquidity");
             price = (_reserveB * 1e18) / _reserveA; // scaled by 1e18
         } else {
